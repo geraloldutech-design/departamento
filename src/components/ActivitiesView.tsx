@@ -153,8 +153,10 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
     if (!formActivity.title || !formActivity.sectorName) return;
 
     const isNew = !formActivity.id;
+    const osNum = formActivity.serviceOrderNumber || `OS-2026-${Math.floor(100 + Math.random() * 900)}`;
     const activityToSave: Activity = {
       id: formActivity.id || `act-${Date.now()}`,
+      serviceOrderNumber: osNum,
       title: formActivity.title || 'Actividade sem Título',
       description: formActivity.description || '',
       sectorId: formActivity.sectorId || 'sec-1',
@@ -464,11 +466,12 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
                     onChange={(e) => setFormActivity({ ...formActivity, status: e.target.value as any })}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium"
                   >
-                    <option value="Pendente">Pendente</option>
-                    <option value="Em Andamento">Em Andamento</option>
+                    <option value="Planeada">Planeada</option>
+                    <option value="Aprovada">Aprovada</option>
+                    <option value="Em Execução">Em Execução</option>
+                    <option value="Suspensa">Suspensa</option>
                     <option value="Concluída">Concluída</option>
-                    <option value="Atrasada">Atrasada</option>
-                    <option value="Cancelada">Cancelada</option>
+                    <option value="Rejeitada">Rejeitada</option>
                   </select>
                 </div>
               </div>

@@ -16,13 +16,31 @@ import {
   Menu,
   ChevronLeft,
   X,
-  LogIn
+  LogIn,
+  Package,
+  Wrench,
+  Truck,
+  AlertOctagon,
+  Sparkles,
+  FileCheck,
+  Megaphone,
+  TrendingUp
 } from 'lucide-react';
 import { UserRole, User } from '../types';
 
 export type NavTab = 
   | 'dashboard'
+  | 'executive-dashboard'
   | 'activities'
+  | 'materials'
+  | 'equipment'
+  | 'vehicles'
+  | 'incidents'
+  | 'attendance'
+  | 'announcements'
+  | 'ai-assistant'
+  | 'digital-approvals'
+  | 'reports-generator'
   | 'calendar'
   | 'nominations'
   | 'employees'
@@ -66,16 +84,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: NavItem[] = [
     // Category: Principal
     { id: 'dashboard', label: 'Visão Geral', icon: LayoutDashboard, category: 'principal' },
+    { id: 'executive-dashboard', label: 'Dashboard Executivo 2.0', icon: TrendingUp, category: 'principal', badge: 'KPIs' },
+    { id: 'ai-assistant', label: 'Assistente IA Gemini', icon: Sparkles, category: 'principal', badge: 'IA' },
     { id: 'activities', label: 'Actividades & Tarefas', icon: CalendarCheck, category: 'principal' },
     { id: 'calendar', label: 'Calendário Operacional', icon: CalendarDays, category: 'principal' },
     { id: 'map', label: 'Mapa do Parque Urbano', icon: MapPin, category: 'principal' },
 
-    // Category: Gestao
+    // Category: Gestao Operacional v2.0
+    { id: 'materials', label: 'Armazém & Stock', icon: Package, category: 'gestao' },
+    { id: 'equipment', label: 'Ferramentas & Equipamentos', icon: Wrench, category: 'gestao' },
+    { id: 'vehicles', label: 'Frota de Viaturas', icon: Truck, category: 'gestao' },
+    { id: 'incidents', label: 'Ocorrências & Incidentes', icon: AlertOctagon, category: 'gestao' },
+    { id: 'attendance', label: 'RH & Assiduidade', icon: Users, category: 'gestao' },
+    { id: 'announcements', label: 'Comunicados Oficiais', icon: Megaphone, category: 'gestao' },
+    { id: 'digital-approvals', label: 'Aprovação Digital', icon: FileCheck, category: 'gestao', badge: '3 Níveis' },
     { id: 'nominations', label: 'Nomeação dos Chefes', icon: UserCheck, category: 'gestao', badge: 'Exclusivo' },
     { id: 'employees', label: 'Funcionários (Equipa)', icon: Users, category: 'gestao' },
     { id: 'sectors', label: 'Sectores EMRICH', icon: Building2, category: 'gestao' },
 
-    // Category: Analise
+    // Category: Analise & Relatorios
+    { id: 'reports-generator', label: 'Relatórios Gerenciais 2.0', icon: FileText, category: 'analise', badge: 'PDF' },
     { id: 'inspections', label: 'Fiscalização Técnico', icon: ClipboardCheck, category: 'analise' },
     { id: 'reports', label: 'Relatórios & Exportação', icon: FileText, category: 'analise' },
     { id: 'analytics', label: 'Indicadores & KPIs', icon: BarChart3, category: 'analise' },

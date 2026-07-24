@@ -10,7 +10,15 @@ import {
   AuditLog,
   Announcement,
   UserRole,
-  User
+  User,
+  TransferRequest,
+  MaterialItem,
+  MaterialRequisition,
+  EquipmentItem,
+  VehicleItem,
+  Incident,
+  AttendanceRecord,
+  DigitalApprovalDocument
 } from '../types';
 
 import {
@@ -23,7 +31,15 @@ import {
   INITIAL_NOTES,
   INITIAL_WHATSAPP_LOGS,
   INITIAL_AUDIT_LOGS,
-  INITIAL_ANNOUNCEMENTS
+  INITIAL_ANNOUNCEMENTS,
+  INITIAL_TRANSFER_REQUESTS,
+  INITIAL_MATERIALS,
+  INITIAL_MATERIAL_REQUISITIONS,
+  INITIAL_EQUIPMENT,
+  INITIAL_VEHICLES,
+  INITIAL_INCIDENTS,
+  INITIAL_ATTENDANCE,
+  INITIAL_DIGITAL_APPROVALS
 } from '../data/initialData';
 
 const KEYS = {
@@ -37,10 +53,18 @@ const KEYS = {
   WHATSAPP_LOGS: 'emrich_whatsapp_logs_v1',
   AUDIT_LOGS: 'emrich_audit_logs_v1',
   ANNOUNCEMENTS: 'emrich_announcements_v1',
+  TRANSFER_REQUESTS: 'emrich_transfer_requests_v1',
   ACTIVE_ROLE: 'emrich_active_role_v1',
   CURRENT_USER: 'emrich_current_user_v1',
   IS_OFFLINE: 'emrich_is_offline_v1',
-  OFFLINE_QUEUE: 'emrich_offline_queue_v1'
+  OFFLINE_QUEUE: 'emrich_offline_queue_v1',
+  MATERIALS: 'emrich_materials_v2',
+  MATERIAL_REQUISITIONS: 'emrich_material_requisitions_v2',
+  EQUIPMENT: 'emrich_equipment_v2',
+  VEHICLES: 'emrich_vehicles_v2',
+  INCIDENTS: 'emrich_incidents_v2',
+  ATTENDANCE: 'emrich_attendance_v2',
+  DIGITAL_APPROVALS: 'emrich_digital_approvals_v2'
 };
 
 function getItem<T>(key: string, defaultValue: T): T {
@@ -144,6 +168,75 @@ export const StorageService = {
     setItem(KEYS.ANNOUNCEMENTS, announcements);
   },
 
+  getTransferRequests(): TransferRequest[] {
+    return getItem<TransferRequest[]>(KEYS.TRANSFER_REQUESTS, INITIAL_TRANSFER_REQUESTS);
+  },
+  saveTransferRequests(requests: TransferRequest[]): void {
+    setItem(KEYS.TRANSFER_REQUESTS, requests);
+  },
+
+  // ---------------- V2.0 NEW STORAGE METHODS ----------------
+  getMaterials(): MaterialItem[] {
+    return getItem<MaterialItem[]>(KEYS.MATERIALS, INITIAL_MATERIALS);
+  },
+  saveMaterials(materials: MaterialItem[]): void {
+    setItem(KEYS.MATERIALS, materials);
+  },
+
+  getMaterialRequisitions(): MaterialRequisition[] {
+    return getItem<MaterialRequisition[]>(KEYS.MATERIAL_REQUISITIONS, INITIAL_MATERIAL_REQUISITIONS);
+  },
+  saveMaterialRequisitions(requisitions: MaterialRequisition[]): void {
+    setItem(KEYS.MATERIAL_REQUISITIONS, requisitions);
+  },
+  getRequisitions(): MaterialRequisition[] {
+    return this.getMaterialRequisitions();
+  },
+  saveRequisitions(requisitions: MaterialRequisition[]): void {
+    this.saveMaterialRequisitions(requisitions);
+  },
+
+  getEquipment(): EquipmentItem[] {
+    return getItem<EquipmentItem[]>(KEYS.EQUIPMENT, INITIAL_EQUIPMENT);
+  },
+  saveEquipment(equipment: EquipmentItem[]): void {
+    setItem(KEYS.EQUIPMENT, equipment);
+  },
+
+  getVehicles(): VehicleItem[] {
+    return getItem<VehicleItem[]>(KEYS.VEHICLES, INITIAL_VEHICLES);
+  },
+  saveVehicles(vehicles: VehicleItem[]): void {
+    setItem(KEYS.VEHICLES, vehicles);
+  },
+
+  getIncidents(): Incident[] {
+    return getItem<Incident[]>(KEYS.INCIDENTS, INITIAL_INCIDENTS);
+  },
+  saveIncidents(incidents: Incident[]): void {
+    setItem(KEYS.INCIDENTS, incidents);
+  },
+
+  getAttendance(): AttendanceRecord[] {
+    return getItem<AttendanceRecord[]>(KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
+  },
+  saveAttendance(attendance: AttendanceRecord[]): void {
+    setItem(KEYS.ATTENDANCE, attendance);
+  },
+
+  getDigitalApprovals(): DigitalApprovalDocument[] {
+    return getItem<DigitalApprovalDocument[]>(KEYS.DIGITAL_APPROVALS, INITIAL_DIGITAL_APPROVALS);
+  },
+  saveDigitalApprovals(approvals: DigitalApprovalDocument[]): void {
+    setItem(KEYS.DIGITAL_APPROVALS, approvals);
+  },
+  getApprovals(): DigitalApprovalDocument[] {
+    return this.getDigitalApprovals();
+  },
+  saveApprovals(approvals: DigitalApprovalDocument[]): void {
+    this.saveDigitalApprovals(approvals);
+  },
+
   getActiveRole(): UserRole {
     return getItem<UserRole>(KEYS.ACTIVE_ROLE, 'Administrador');
   },
@@ -199,6 +292,15 @@ export const StorageService = {
     setItem(KEYS.WHATSAPP_LOGS, INITIAL_WHATSAPP_LOGS);
     setItem(KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
     setItem(KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
+    setItem(KEYS.TRANSFER_REQUESTS, INITIAL_TRANSFER_REQUESTS);
+    setItem(KEYS.MATERIALS, INITIAL_MATERIALS);
+    setItem(KEYS.MATERIAL_REQUISITIONS, INITIAL_MATERIAL_REQUISITIONS);
+    setItem(KEYS.EQUIPMENT, INITIAL_EQUIPMENT);
+    setItem(KEYS.VEHICLES, INITIAL_VEHICLES);
+    setItem(KEYS.INCIDENTS, INITIAL_INCIDENTS);
+    setItem(KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
+    setItem(KEYS.DIGITAL_APPROVALS, INITIAL_DIGITAL_APPROVALS);
     setItem(KEYS.OFFLINE_QUEUE, []);
   }
 };
+

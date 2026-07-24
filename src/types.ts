@@ -72,10 +72,22 @@ export interface Employee {
   email: string;
   status: 'Ativo' | 'Férias' | 'Licença' | 'Inativo';
   admissionDate: string;
+  vacationDaysLeft?: number;
+  shiftScale?: 'Manhã' | 'Tarde' | 'Noite' | 'Normal' | 'Escala 24/48';
 }
 
 export type ActivityPriority = 'Baixa' | 'Média' | 'Alta' | 'Urgente';
-export type ActivityStatus = 'Pendente' | 'Em Andamento' | 'Concluída' | 'Atrasada' | 'Cancelada';
+export type ActivityStatus = 
+  | 'Planeada'
+  | 'Aprovada'
+  | 'Em Execução'
+  | 'Suspensa'
+  | 'Concluída'
+  | 'Rejeitada'
+  | 'Pendente' 
+  | 'Em Andamento' 
+  | 'Atrasada' 
+  | 'Cancelada';
 
 export interface ChecklistItem {
   id: string;
@@ -85,6 +97,7 @@ export interface ChecklistItem {
 
 export interface Activity {
   id: string;
+  serviceOrderNumber: string; // E.g., "OS-2026-001"
   title: string;
   description: string;
   sectorId: string;
@@ -99,15 +112,251 @@ export interface Activity {
   time: string;
   priority: ActivityPriority;
   status: ActivityStatus;
+  teamMembers?: string[]; // Equipa envolvida
   materialsRequired: string[];
   equipmentRequired: string[];
-  photos: string[];
+  photos: string[]; // General or original photos
+  photosBefore?: string[]; // Fotografias Antes
+  photosAfter?: string[]; // Fotografias Depois
   checklist: ChecklistItem[];
   progressPercent: number;
+  inspectionNotes?: string; // Observações da fiscalização
   createdBy: string;
   createdAt: string;
   whatsappNotified: boolean;
   whatsappNotifiedAt?: string;
+}
+
+// -------------------------------------------------------------
+// 2. MATERIAIS & ARMAZÉM / STOCK
+// -------------------------------------------------------------
+export interface MaterialItem {
+  id: string;
+  code: string; // Ex: MAT-012
+  name: string;
+  category: 'Construção' | 'Canalização' | 'Elétrico' | 'Limpeza & EPIS' | 'Jardinagem' | 'Ferramentas Consumíveis';
+  quantity: number;
+  unit: 'kg' | 'metros' | 'unidades' | 'litros' | 'sacos' | 'caixas' | 'rolos';
+  minQuantity: number;
+  unitPriceEstimate: number; // MZN
+  warehouseLocation: string;
+  sectorName?: string;
+  lastRestockedAt: string;
+}
+
+export interface RequisitionItem {
+  materialId: string;
+  materialName: string;
+  quantityRequested: number;
+  unit: string;
+}
+
+export interface MaterialRequisition {
+  id: string;
+  requisitionNumber: string; // Ex: REQ-2026-042
+  activityId?: string;
+  activityTitle?: string;
+  sectorId: string;
+  sectorName: string;
+  requestedBy: string;
+  requestedByRole: UserRole;
+  items: RequisitionItem[];
+  purpose: string;
+  status: 'Pendente (Solicitado)' | 'Validado pelo Chefe' | 'Aprovado (Stock Entregue)' | 'Rejeitado';
+  validatedBy?: string;
+  validatedAt?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  createdAt: string;
+  deliveryDate?: string;
+}
+
+// -------------------------------------------------------------
+// 3. FERRAMENTAS E EQUIPAMENTOS
+// -------------------------------------------------------------
+export interface MaintenanceRecord {
+  id: string;
+  date: string;
+  type: 'Preventiva' | 'Correctiva';
+  description: string;
+  cost: number;
+  performedBy: string;
+}
+
+export interface EquipmentItem {
+  id: string;
+  code: string; // Ex: FER-089
+  name: string;
+  category: 'Máquinas Pesadas' | 'Equipamento Elétrico' | 'Ferramentas Manuais' | 'Medição & Topografia' | 'Proteção Individual';
+  serialNumber: string;
+  condition: 'Excelente' | 'Bom' | 'Regular' | 'Danificado' | 'Em Manutenção';
+  assignedToName?: string;
+  assignedToSectorName?: string;
+  checkoutDate?: string;
+  expectedReturnDate?: string;
+  nextPreventiveMaintenanceDate?: string;
+  maintenanceHistory: MaintenanceRecord[];
+}
+
+// -------------------------------------------------------------
+// 4. GESTÃO DE VIATURAS
+// -------------------------------------------------------------
+export interface FuelLog {
+  id: string;
+  date: string;
+  liters: number;
+  costTotal: number;
+  kmAtRefuel: number;
+  driverName: string;
+  fuelType: 'Diesel' | 'Gasolina';
+  receiptCode?: string;
+}
+
+export interface VehicleMaintenance {
+  id: string;
+  date: string;
+  type: 'Preventiva (Revisão)' | 'Correctiva (Avaria)';
+  description: string;
+  costTotal: number;
+  workshopName: string;
+  kmAtService: number;
+}
+
+export interface VehicleTrip {
+  id: string;
+  date: string;
+  driverName: string;
+  destination: string;
+  purpose: string;
+  startKm: number;
+  endKm: number;
+  status: 'Em Viagem' | 'Concluída';
+}
+
+export interface VehicleItem {
+  id: string;
+  plateNumber: string; // Ex: MMB-48-21
+  makeModel: string; // Ex: Toyota Hilux 4x4 Single Cab
+  type: 'Camioneta Pick-up' | 'Camião de Lixo' | 'Trator & Reboque' | 'Camião Cisterna' | 'Motociclo' | 'Lancha de Inspecção';
+  sectorName: string;
+  assignedDriver: string;
+  currentKm: number;
+  fuelType: 'Diesel' | 'Gasolina';
+  status: 'Operacional' | 'Em Manutenção' | 'Inactiva';
+  nextServiceKm: number;
+  fuelLogs: FuelLog[];
+  maintenanceLogs: VehicleMaintenance[];
+  trips: VehicleTrip[];
+}
+
+// -------------------------------------------------------------
+// 5. GESTÃO DE OCORRÊNCIAS
+// -------------------------------------------------------------
+export type IncidentCategory = 
+  | 'Avaria Técnica' 
+  | 'Roubo ou Vandalismo' 
+  | 'Danos na Infraestrutura' 
+  | 'Problema Ambiental / Inundação' 
+  | 'Reclamação de Cidadão / Munícipe';
+
+export type IncidentSeverity = 'Baixa' | 'Média' | 'Alta' | 'Crítica';
+
+export type IncidentStatus = 'Registada' | 'Em Análise' | 'Em Resolução' | 'Resolvida' | 'Arquivada';
+
+export interface Incident {
+  id: string;
+  incidentNumber: string; // Ex: OCO-2026-001
+  title: string;
+  description: string;
+  category: IncidentCategory;
+  locationName: string;
+  latitude: number;
+  longitude: number;
+  photos: string[];
+  reportedBy: string;
+  reportedAt: string;
+  assignedToSector: string;
+  responsibleName?: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  resolutionNotes?: string;
+  resolvedAt?: string;
+}
+
+// -------------------------------------------------------------
+// 6. GESTÃO DE RECURSOS HUMANOS / PRESENÇAS
+// -------------------------------------------------------------
+export type AttendanceStatus = 
+  | 'Presente' 
+  | 'Falta Justificada' 
+  | 'Falta Injustificada' 
+  | 'Atraso' 
+  | 'Licença Médica' 
+  | 'Férias';
+
+export interface AttendanceRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  sectorName: string;
+  date: string; // YYYY-MM-DD
+  status: AttendanceStatus;
+  shift: 'Manhã' | 'Tarde' | 'Noite' | 'Normal';
+  checkInTime?: string;
+  notes?: string;
+  recordedBy: string;
+}
+
+// -------------------------------------------------------------
+// 7. COMUNICAÇÃO INSTITUCIONAL (COMUNICADOS OFICIAIS)
+// -------------------------------------------------------------
+export interface ReadReceipt {
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  readAt: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  authorName: string;
+  authorRole: string;
+  isUrgent: boolean;
+  targetSectors?: string[]; // If empty, for all
+  attachments?: string[];
+  createdAt: string;
+  readReceipts?: ReadReceipt[];
+}
+
+// -------------------------------------------------------------
+// 10. APROVAÇÃO DIGITAL E ASSINATURA ELETRÓNICA
+// -------------------------------------------------------------
+export interface ApprovalStep {
+  level: 1 | 2 | 3;
+  roleRequired: UserRole;
+  approverName?: string;
+  status: 'Pendente' | 'Aprovado' | 'Rejeitado';
+  signedAt?: string;
+  signatureHash?: string;
+  comments?: string;
+}
+
+export interface DigitalApprovalDocument {
+  id: string;
+  documentType: 'Ordem de Serviço' | 'Requisição de Materiais' | 'Relatório Operacional' | 'Parecer de Fiscalização' | 'Transferência de Quadros';
+  referenceId: string; // Ex: OS ID or Req ID
+  title: string;
+  sectorName: string;
+  createdByName: string;
+  createdByRole: UserRole;
+  currentLevel: 1 | 2 | 3;
+  steps: ApprovalStep[];
+  digitalSignatureCanvas?: string; // base64
+  finalStatus: 'Em Aprovação' | 'Aprovado Total' | 'Rejeitado';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ActivityReport {
@@ -127,6 +376,7 @@ export interface ActivityReport {
   videos?: string[];
   documents?: string[];
   digitalSignature?: string; // base64 or signature string
+  approvalDocumentId?: string;
   status: 'Pendente Aprovação' | 'Aprovado' | 'Rejeitado';
   approvedBy?: string;
   approvedAt?: string;
@@ -183,12 +433,20 @@ export interface AuditLog {
   details: string;
 }
 
-export interface Announcement {
+export interface TransferRequest {
   id: string;
-  title: string;
-  content: string;
-  authorName: string;
-  authorRole: string;
-  isUrgent: boolean;
+  employeeId: string;
+  employeeName: string;
+  fromSectorId: string;
+  fromSectorName: string;
+  toSectorId: string;
+  toSectorName: string;
+  requestedBy: string;
+  requestedByRole: UserRole;
+  reason: string;
+  status: 'Pendente' | 'Aprovado' | 'Rejeitado';
+  approvedBy?: string;
+  approvedAt?: string;
   createdAt: string;
 }
+
