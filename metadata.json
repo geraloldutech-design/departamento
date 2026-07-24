@@ -1,0 +1,6 @@
+{
+  "name": "EMRICH GESTOR",
+  "description": "Sistema Integrado de Gestão Operacional para a Empresa Municipal do Rio Chiveve (EMRICH)",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
