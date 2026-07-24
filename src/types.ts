@@ -14,7 +14,9 @@ export interface User {
   avatarUrl?: string;
   department?: string;
   sectorId?: string;
+  sectorName?: string;
   whatsapp?: string;
+  employeeCode?: string;
 }
 
 export type SectorName = 
@@ -52,7 +54,7 @@ export interface Nomination {
   email: string;
   startDate: string;
   endDate?: string;
-  status: 'Ativa' | 'Concluída' | 'Revogada';
+  status: 'Ativa' | 'Concluída' | 'Revogada' | 'Exonerado(a)';
   notes?: string;
   createdAt: string;
 }

@@ -15,6 +15,7 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
 import { AuditBackupView } from './components/AuditBackupView';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
+import { LoginModal } from './components/LoginModal';
 
 import { StorageService } from './services/storageService';
 import { WhatsAppService } from './services/whatsappService';
@@ -29,17 +30,20 @@ import {
   WhatsAppLog, 
   AuditLog, 
   Announcement, 
-  UserRole 
+  UserRole,
+  User 
 } from './types';
 
 export default function App() {
   // Navigation & Role State
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [currentUser, setCurrentUser] = useState<User | null>(() => StorageService.getCurrentUser());
   const [activeRole, setActiveRole] = useState<UserRole>(() => StorageService.getActiveRole());
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('emrich_theme') === 'dark';
   });
   const [isOffline, setIsOffline] = useState<boolean>(() => StorageService.getIsOffline());
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   // Domain State
   const [sectors, setSectors] = useState<Sector[]>(() => StorageService.getSectors());
@@ -54,6 +58,7 @@ export default function App() {
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => StorageService.getAnnouncements());
 
   // Modals & Drawers State
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isWhatsAppDrawerOpen, setIsWhatsAppDrawerOpen] = useState(false);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -87,7 +92,27 @@ export default function App() {
   const handleRoleChange = (role: UserRole) => {
     setActiveRole(role);
     StorageService.setActiveRole(role);
+    if (currentUser) {
+      const updatedUser = { ...currentUser, role };
+      setCurrentUser(updatedUser);
+      StorageService.setCurrentUser(updatedUser);
+    }
     StorageService.addAuditLog('Utilizador', role, 'Alternou Perfil', 'Perfil', `Perfil do utilizador alterado para ${role}.`);
+    setAuditLogs(StorageService.getAuditLogs());
+  };
+
+  // Login / Change Collaborator handler
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+    setActiveRole(user.role);
+    StorageService.setCurrentUser(user);
+    StorageService.addAuditLog(
+      user.name, 
+      user.role, 
+      'Login do Colaborador', 
+      'Sessão & Autenticação', 
+      `Colaborador ${user.name} iniciou sessão no Sector ${user.sectorName || 'Geral'} como ${user.role}.`
+    );
     setAuditLogs(StorageService.getAuditLogs());
   };
 
@@ -164,20 +189,31 @@ export default function App() {
 
   // Nomination Handler (Auto WhatsApp Contact Sync)
   const handleSaveNomination = (nomination: Nomination) => {
-    const updatedNoms = [nomination, ...nominations];
+    const exists = nominations.some(n => n.id === nomination.id);
+    let updatedNoms: Nomination[];
+    if (exists) {
+      updatedNoms = nominations.map(n => n.id === nomination.id ? nomination : n);
+    } else {
+      updatedNoms = [nomination, ...nominations];
+    }
+
     setNominations(updatedNoms);
     StorageService.saveNominations(updatedNoms);
 
-    // Auto update sector WhatsApp contact
-    WhatsAppService.updateSectorHeadWhatsAppFromNomination(nomination);
-    setSectors(StorageService.getSectors());
+    // Auto update sector WhatsApp contact if active
+    if (nomination.status === 'Ativa') {
+      WhatsAppService.updateSectorHeadWhatsAppFromNomination(nomination);
+      setSectors(StorageService.getSectors());
+    }
+
+    const isExoneration = nomination.status === 'Exonerado(a)' || nomination.status === 'Revogada';
 
     StorageService.addAuditLog(
-      'Utilizador', 
+      currentUser?.name || 'Utilizador', 
       activeRole, 
-      'Efectuou Nomeação de Chefe', 
-      'Nomeação dos Chefes', 
-      `Nomeado ${nomination.fullName} como ${nomination.cargo} do sector de ${nomination.sectorName}.`
+      isExoneration ? 'Efectuou Exoneração de Chefe' : 'Efectuou Nomeação de Chefe', 
+      'Nomeação e Exoneração dos Chefes', 
+      `${isExoneration ? 'Exonerado' : 'Nomeado'} ${nomination.fullName} como ${nomination.cargo} do sector de ${nomination.sectorName}.`
     );
     setAuditLogs(StorageService.getAuditLogs());
     setIsNominationModalOpen(false);
@@ -290,6 +326,8 @@ export default function App() {
       
       {/* Top Header */}
       <Header
+        currentUser={currentUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
         activeRole={activeRole}
         onRoleChange={handleRoleChange}
         isDarkMode={isDarkMode}
@@ -299,22 +337,29 @@ export default function App() {
         onOpenGlobalSearch={() => setIsGlobalSearchOpen(true)}
         onOpenWhatsAppDrawer={() => setIsWhatsAppDrawerOpen(true)}
         unreadNotificationsCount={whatsappLogs.length}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
       {/* Main Container Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row">
+      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row relative">
         
         {/* Sidebar Navigation */}
         <Sidebar 
           activeTab={activeTab}
           onTabChange={setActiveTab}
           activeRole={activeRole}
+          currentUser={currentUser}
+          onOpenLoginModal={() => setIsLoginModalOpen(true)}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
         {/* Dynamic View Content */}
         <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
           {activeTab === 'dashboard' && (
             <DashboardView
+              currentUser={currentUser}
               activities={activities}
               sectors={sectors}
               announcements={announcements}
@@ -488,6 +533,16 @@ export default function App() {
         notes={notes}
         sectors={sectors}
         onSelectResult={(tab) => setActiveTab(tab)}
+      />
+
+      {/* Login & Sector Selection Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        currentUser={currentUser}
+        sectors={sectors}
+        employees={employees}
+        onLogin={handleLogin}
       />
 
     </div>

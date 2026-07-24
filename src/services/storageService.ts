@@ -9,7 +9,8 @@ import {
   WhatsAppLog,
   AuditLog,
   Announcement,
-  UserRole
+  UserRole,
+  User
 } from '../types';
 
 import {
@@ -37,6 +38,7 @@ const KEYS = {
   AUDIT_LOGS: 'emrich_audit_logs_v1',
   ANNOUNCEMENTS: 'emrich_announcements_v1',
   ACTIVE_ROLE: 'emrich_active_role_v1',
+  CURRENT_USER: 'emrich_current_user_v1',
   IS_OFFLINE: 'emrich_is_offline_v1',
   OFFLINE_QUEUE: 'emrich_offline_queue_v1'
 };
@@ -147,6 +149,24 @@ export const StorageService = {
   },
   setActiveRole(role: UserRole): void {
     setItem(KEYS.ACTIVE_ROLE, role);
+  },
+
+  getCurrentUser(): User | null {
+    return getItem<User | null>(KEYS.CURRENT_USER, {
+      id: 'usr-default',
+      name: 'Manuel Alberto',
+      email: 'm.alberto@emrich.co.mz',
+      role: 'Chefe do Sector',
+      sectorName: 'Jardinagem',
+      department: 'Departamento de Infraestruturas',
+      employeeCode: 'EMP-0142'
+    });
+  },
+  setCurrentUser(user: User | null): void {
+    setItem(KEYS.CURRENT_USER, user);
+    if (user?.role) {
+      this.setActiveRole(user.role);
+    }
   },
 
   getIsOffline(): boolean {

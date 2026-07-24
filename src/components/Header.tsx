@@ -2,17 +2,22 @@ import React from 'react';
 import { 
   ShieldCheck, 
   Search, 
-  Bell, 
   Wifi, 
   WifiOff, 
   Sun, 
   Moon, 
   Smartphone,
-  UserCheck
+  UserCheck,
+  Menu,
+  X,
+  LogIn,
+  Building2
 } from 'lucide-react';
-import { UserRole } from '../types';
+import { UserRole, User } from '../types';
 
 interface HeaderProps {
+  currentUser: User | null;
+  onOpenLoginModal: () => void;
   activeRole: UserRole;
   onRoleChange: (role: UserRole) => void;
   isDarkMode: boolean;
@@ -22,6 +27,8 @@ interface HeaderProps {
   onOpenGlobalSearch: () => void;
   onOpenWhatsAppDrawer: () => void;
   unreadNotificationsCount: number;
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
 const ROLES: { role: UserRole; label: string; desc: string }[] = [
@@ -34,6 +41,8 @@ const ROLES: { role: UserRole; label: string; desc: string }[] = [
 ];
 
 export const Header: React.FC<HeaderProps> = ({
+  currentUser,
+  onOpenLoginModal,
   activeRole,
   onRoleChange,
   isDarkMode,
@@ -42,27 +51,40 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleOffline,
   onOpenGlobalSearch,
   onOpenWhatsAppDrawer,
-  unreadNotificationsCount
+  unreadNotificationsCount,
+  isSidebarOpen,
+  onToggleSidebar
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-emerald-950/95 backdrop-blur-md text-white shadow-sm dark:bg-slate-900/95 border-b border-emerald-900/50 dark:border-slate-800/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md text-white shadow-sm dark:bg-slate-900/95 border-b border-emerald-900/50 dark:border-slate-800/80 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         
-        {/* Brand & Institution */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 backdrop-blur border border-emerald-400/30 flex items-center justify-center font-bold text-lg text-emerald-300 shadow-sm">
-            <ShieldCheck className="w-6 h-6 text-emerald-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-black text-lg tracking-tight text-white">EMRICH GESTOR</h1>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-emerald-800/80 text-emerald-200 rounded-full border border-emerald-600/40">
-                Rio Chiveve - Beira
-              </span>
+        {/* Left: 3-Bars Toggle + Brand & Institution */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={onToggleSidebar}
+            className="p-2.5 rounded-2xl bg-emerald-900/80 hover:bg-emerald-800/90 text-emerald-200 border border-emerald-700/60 transition shadow-xs flex items-center justify-center shrink-0"
+            title={isSidebarOpen ? "Ocultar Menu Lateral (3 Barras)" : "Mostrar Menu Lateral (3 Barras)"}
+            aria-label="Alternar Menu Lateral"
+          >
+            {isSidebarOpen ? <X className="w-5 h-5 text-emerald-300" /> : <Menu className="w-5 h-5 text-emerald-300" />}
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 backdrop-blur border border-emerald-400/30 flex items-center justify-center font-bold text-lg text-emerald-300 shadow-sm shrink-0">
+              <ShieldCheck className="w-6 h-6 text-emerald-400" />
             </div>
-            <p className="text-[11px] text-emerald-200/70 dark:text-slate-400 hidden sm:block">
-              Empresa Municipal do Rio Chiveve
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-black text-base sm:text-lg tracking-tight text-white">EMRICH GESTOR</h1>
+                <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-emerald-800/80 text-emerald-200 rounded-full border border-emerald-600/40">
+                  Infraestruturas • Parque Urbano
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-200/70 dark:text-slate-400 hidden sm:block">
+                Departamento de Infraestruturas • Empresa Municipal do Rio Chiveve (Beira)
+              </p>
+            </div>
           </div>
         </div>
 
@@ -80,35 +102,37 @@ export const Header: React.FC<HeaderProps> = ({
             <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] bg-emerald-950 text-emerald-300 rounded-lg border border-emerald-800 font-mono">⌘K</kbd>
           </button>
 
-          {/* Role Switcher */}
-          <div className="relative group">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-900/80 hover:bg-emerald-800 text-xs text-white border border-emerald-700/60 cursor-pointer shadow-xs transition">
-              <UserCheck className="w-4 h-4 text-emerald-300 shrink-0" />
-              <div className="text-left">
-                <span className="block text-[9px] text-emerald-300 uppercase font-extrabold leading-none">Perfil</span>
-                <span className="font-semibold text-xs leading-tight">{activeRole}</span>
+          {/* Logged in Collaborator Badge & Login/Sector Button */}
+          <button
+            onClick={onOpenLoginModal}
+            className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-emerald-900/90 to-teal-900/90 hover:from-emerald-800 hover:to-teal-800 text-xs text-white border border-emerald-500/40 shadow-xs transition group text-left"
+            title="Clique para Entrar ou Alterar Colaborador, Sector e Função"
+          >
+            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition">
+              <UserCheck className="w-4 h-4" />
+            </div>
+            
+            <div className="hidden sm:block">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-xs text-white leading-none">
+                  {currentUser?.name || 'Colaborador'}
+                </span>
+                {currentUser?.sectorName && (
+                  <span className="px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider bg-emerald-500/30 text-emerald-200 rounded border border-emerald-400/30">
+                    {currentUser.sectorName}
+                  </span>
+                )}
               </div>
+              <span className="block text-[10px] text-emerald-300/80 leading-tight">
+                {currentUser?.role || activeRole}
+              </span>
             </div>
 
-            {/* Dropdown menu */}
-            <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 py-2 hidden group-hover:block z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
-              <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                Alternar Perfil do Utilizador
-              </div>
-              {ROLES.map(r => (
-                <button
-                  key={r.role}
-                  onClick={() => onRoleChange(r.role)}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex flex-col hover:bg-emerald-50 dark:hover:bg-slate-800 transition ${
-                    activeRole === r.role ? 'bg-emerald-50/80 text-emerald-900 font-bold dark:bg-slate-800 dark:text-emerald-400' : ''
-                  }`}
-                >
-                  <span className="font-semibold">{r.label}</span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{r.desc}</span>
-                </button>
-              ))}
+            <div className="sm:hidden text-left">
+              <span className="block text-[10px] font-bold text-white leading-none">{currentUser?.name || 'Login'}</span>
+              <span className="block text-[9px] text-emerald-300">{currentUser?.sectorName || activeRole}</span>
             </div>
-          </div>
+          </button>
 
           {/* Offline Mode Toggle Button */}
           <button

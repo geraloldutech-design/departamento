@@ -24,9 +24,9 @@ export const MapView: React.FC<MapViewProps> = ({ activities, sectors, onOpenWha
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <MapPin className="w-5 h-5 text-sky-600" />
-            Mapa Operacional do Rio Chiveve (Beira, Sofala)
+            Mapa Operacional do Parque Urbano (Beira, Sofala)
           </h2>
-          <p className="text-xs text-slate-500">Localização geográfica em tempo real das frentes de trabalho e eclusas</p>
+          <p className="text-xs text-slate-500">Localização geográfica em tempo real das frentes de trabalho de infraestruturas e espaços verdes</p>
         </div>
 
         <select
@@ -51,7 +51,7 @@ export const MapView: React.FC<MapViewProps> = ({ activities, sectors, onOpenWha
           <div className="flex items-center justify-between gap-2 z-10 bg-slate-950/80 backdrop-blur p-3 rounded-xl border border-slate-800 text-xs text-white">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-emerald-400 animate-spin" />
-              <span className="font-bold">Bacia do Rio Chiveve - Cidade da Beira</span>
+              <span className="font-bold">Área do Parque Urbano - Cidade da Beira</span>
             </div>
             <span className="text-[10px] text-slate-400 font-mono">GPS Ref: -19.8395, 34.8380</span>
           </div>
